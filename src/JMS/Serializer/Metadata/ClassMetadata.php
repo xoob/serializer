@@ -19,6 +19,7 @@
 namespace JMS\Serializer\Metadata;
 
 use JMS\Serializer\Exception\InvalidArgumentException;
+use JMS\Serializer\Exclusion\GroupsExclusionStrategy;
 use Metadata\MergeableInterface;
 use Metadata\MethodMetadata;
 use Metadata\MergeableClassMetadata;
@@ -193,6 +194,10 @@ class ClassMetadata extends MergeableClassMetadata
                 $this->name,
                 $this->discriminatorFieldName,
                 $typeValue
+            );
+            $discriminatorProperty->groups = array(
+                GroupsExclusionStrategy::DEFAULT_GROUP,
+                GroupsExclusionStrategy::DISCRIMINATOR_GROUP,
             );
             $this->propertyMetadata[$this->discriminatorFieldName] = $discriminatorProperty;
         }
