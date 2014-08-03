@@ -18,8 +18,10 @@
 
 namespace JMS\Serializer\Metadata\Driver;
 
-use JMS\Serializer\Metadata\ClassMetadata;
 use Doctrine\Common\Persistence\Mapping\ClassMetadata as DoctrineClassMetadata;
+use Doctrine\ODM\MongoDB\Mapping\ClassMetadata as DoctrineODMClassMetadata;
+use Doctrine\ORM\Mapping\ClassMetadata as DoctrineORMClassMetadata;
+use JMS\Serializer\Metadata\ClassMetadata;
 use JMS\Serializer\Metadata\PropertyMetadata;
 
 /**
@@ -28,24 +30,54 @@ use JMS\Serializer\Metadata\PropertyMetadata;
  */
 class DoctrineTypeDriver extends AbstractDoctrineTypeDriver
 {
+    /**
+     * {@inheritdoc}
+     */
     protected function setDiscriminator(DoctrineClassMetadata $doctrineMetadata, ClassMetadata $classMetadata)
     {
-        if (empty($classMetadata->discriminatorMap) && ! $classMetadata->discriminatorDisabled
-            && ! empty($doctrineMetadata->discriminatorMap) && $doctrineMetadata->isRootEntity()
+        if (!empty($classMetadata->discriminatorMap) || $classMetadata->discriminatorDisabled) {
+            return;
+        }
+
+        // ORM
+        if ($doctrineMetadata instanceof DoctrineORMClassMetadata
+            && $doctrineMetadata->isRootEntity()
+            && !empty($doctrineMetadata->discriminatorMap)
         ) {
             $classMetadata->setDiscriminator(
                 $doctrineMetadata->discriminatorColumn['name'],
                 $doctrineMetadata->discriminatorMap
             );
         }
+
+        // ODM
+        if ($doctrineMetadata instanceof DoctrineODMClassMetadata
+            && $doctrineMetadata->name == $doctrineMetadata->rootDocumentName
+            && !empty($doctrineMetadata->discriminatorMap)
+        ) {
+            $classMetadata->setDiscriminator(
+                $doctrineMetadata->discriminatorField,
+                $doctrineMetadata->discriminatorMap
+            );
+        }
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function setPropertyType(DoctrineClassMetadata $doctrineMetadata, PropertyMetadata $propertyMetadata)
     {
         $propertyName = $propertyMetadata->name;
-        if ($doctrineMetadata->hasField($propertyName) && $fieldType = $this->normalizeFieldType($doctrineMetadata->getTypeOfField($propertyName))) {
+
+        if ($doctrineMetadata->hasField($propertyName)) {
+            if (null === $fieldType = $this->normalizeFieldType($doctrineMetadata->getTypeOfField($propertyName))) {
+                return;
+            }
+
             $propertyMetadata->setType($fieldType);
-        } elseif ($doctrineMetadata->hasAssociation($propertyName)) {
+        }
+
+        if ($doctrineMetadata->hasAssociation($propertyName)) {
             $targetEntity = $doctrineMetadata->getAssociationTargetClass($propertyName);
 
             if (null === $targetMetadata = $this->tryLoadingDoctrineMetadata($targetEntity)) {
@@ -55,7 +87,9 @@ class DoctrineTypeDriver extends AbstractDoctrineTypeDriver
             // For inheritance schemes, we cannot add any type as we would only add the super-type of the hierarchy.
             // On serialization, this would lead to only the supertype being serialized, and properties of subtypes
             // being ignored.
-            if ($targetMetadata instanceof DoctrineClassMetadata && ! $targetMetadata->isInheritanceTypeNone()) {
+            if (($targetMetadata instanceof DoctrineORMClassMetadata || $targetMetadata instanceof DoctrineODMClassMetadata)
+                && !$targetMetadata->isInheritanceTypeNone()
+            ) {
                 return;
             }
 
