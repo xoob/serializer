@@ -25,6 +25,7 @@ use JMS\Serializer\Context;
 class GroupsExclusionStrategy implements ExclusionStrategyInterface
 {
     const DEFAULT_GROUP = 'Default';
+    const DISCRIMINATOR_GROUP = 'Discriminator';
 
     private $groups = array();
 
