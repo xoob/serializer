@@ -29,7 +29,7 @@ class PropelCollectionHandler implements SubscribingHandlerInterface
     public static function getSubscribingMethods()
     {
         $methods = array();
-        $formats = array('json', 'xml', 'yml');
+        $formats = array('json', 'xml', 'yml', 'raw');
         //Note: issue when handling inheritance
         $collectionTypes = array(
             'PropelCollection',

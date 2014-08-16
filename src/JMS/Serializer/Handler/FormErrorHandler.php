@@ -34,7 +34,7 @@ class FormErrorHandler implements SubscribingHandlerInterface
     public static function getSubscribingMethods()
     {
         $methods = array();
-        foreach (array('xml', 'json', 'yml') as $format) {
+        foreach (array('xml', 'json', 'yml', 'raw') as $format) {
             $methods[] = array(
                 'direction' => GraphNavigator::DIRECTION_SERIALIZATION,
                 'type' => 'Symfony\Component\Form\Form',
@@ -97,6 +97,11 @@ class FormErrorHandler implements SubscribingHandlerInterface
         return $this->convertFormToArray($visitor, $form);
     }
 
+    public function serializeFormToRaw(YamlSerializationVisitor $visitor, Form $form, array $type)
+    {
+        return $this->convertFormToArray($visitor, $form);
+    }
+
     public function serializeFormErrorToXml(XmlSerializationVisitor $visitor, FormError $formError, array $type)
     {
         if (null === $visitor->document) {
@@ -112,6 +117,11 @@ class FormErrorHandler implements SubscribingHandlerInterface
     }
 
     public function serializeFormErrorToYml(YamlSerializationVisitor $visitor, FormError $formError, array $type)
+    {
+        return $this->getErrorMessage($formError);
+    }
+
+    public function serializeFormErrorToRaw(YamlSerializationVisitor $visitor, FormError $formError, array $type)
     {
         return $this->getErrorMessage($formError);
     }

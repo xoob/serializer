@@ -189,6 +189,7 @@ class SerializerBuilder
             'xml' => new XmlSerializationVisitor($this->propertyNamingStrategy),
             'yml' => new YamlSerializationVisitor($this->propertyNamingStrategy),
             'json' => new JsonSerializationVisitor($this->propertyNamingStrategy),
+            'raw' => new RawSerializationVisitor($this->propertyNamingStrategy),
         ));
 
         return $this;
@@ -202,6 +203,7 @@ class SerializerBuilder
         $this->deserializationVisitors->setAll(array(
             'xml' => new XmlDeserializationVisitor($this->propertyNamingStrategy),
             'json' => new JsonDeserializationVisitor($this->propertyNamingStrategy),
+            'raw' => new RawDeserializationVisitor($this->propertyNamingStrategy),
         ));
 
         return $this;

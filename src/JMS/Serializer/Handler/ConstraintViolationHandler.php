@@ -31,7 +31,7 @@ class ConstraintViolationHandler implements SubscribingHandlerInterface
     public static function getSubscribingMethods()
     {
         $methods = array();
-        $formats = array('xml', 'json', 'yml');
+        $formats = array('xml', 'json', 'yml', 'raw');
         $types = array('Symfony\Component\Validator\ConstraintViolationList' => 'serializeList', 'Symfony\Component\Validator\ConstraintViolation' => 'serializeViolation');
 
         foreach ($types as $type => $method) {
@@ -69,6 +69,11 @@ class ConstraintViolationHandler implements SubscribingHandlerInterface
         return $visitor->visitArray(iterator_to_array($list), $type, $context);
     }
 
+    public function serializeListToRaw(YamlSerializationVisitor $visitor, ConstraintViolationList $list, array $type, Context $context)
+    {
+        return $visitor->visitArray(iterator_to_array($list), $type, $context);
+    }
+
     public function serializeViolationToXml(XmlSerializationVisitor $visitor, ConstraintViolation $violation, array $type = null)
     {
         if (null === $visitor->document) {
@@ -102,6 +107,14 @@ class ConstraintViolationHandler implements SubscribingHandlerInterface
     }
 
     public function serializeViolationToYml(YamlSerializationVisitor $visitor, ConstraintViolation $violation, array $type = null)
+    {
+        return array(
+            'property_path' => $violation->getPropertyPath(),
+            'message' => $violation->getMessage(),
+        );
+    }
+
+    public function serializeViolationToRaw(YamlSerializationVisitor $visitor, ConstraintViolation $violation, array $type = null)
     {
         return array(
             'property_path' => $violation->getPropertyPath(),
