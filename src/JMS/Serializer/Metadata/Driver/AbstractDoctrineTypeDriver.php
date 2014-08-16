@@ -121,6 +121,10 @@ abstract class AbstractDoctrineTypeDriver implements DriverInterface
             $this->setPropertyType($doctrineMetadata, $propertyMetadata);
         }
 
+        if ( ! $classMetadata->accessorOrder ) {
+            $this->setPropertyOrder($doctrineMetadata, $classMetadata);
+        }
+
         return $classMetadata;
     }
 
@@ -131,6 +135,16 @@ abstract class AbstractDoctrineTypeDriver implements DriverInterface
      * @param ClassMetadata         $classMetadata
      */
     protected function setDiscriminator(DoctrineClassMetadata $doctrineMetadata, ClassMetadata $classMetadata)
+    {
+    }
+
+    /**
+     * Infer property order from the given metadata
+     *
+     * @param DoctrineClassMetadata $doctrineMetadata
+     * @param ClassMetadata         $classMetadata
+     */
+    protected function setPropertyOrder(DoctrineClassMetadata $doctrineMetadata, ClassMetadata $classMetadata)
     {
     }
 
