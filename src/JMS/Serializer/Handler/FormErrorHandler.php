@@ -97,7 +97,7 @@ class FormErrorHandler implements SubscribingHandlerInterface
         return $this->convertFormToArray($visitor, $form);
     }
 
-    public function serializeFormToRaw(YamlSerializationVisitor $visitor, Form $form, array $type)
+    public function serializeFormToRaw(RawSerializationVisitor $visitor, Form $form, array $type)
     {
         return $this->convertFormToArray($visitor, $form);
     }
@@ -121,7 +121,7 @@ class FormErrorHandler implements SubscribingHandlerInterface
         return $this->getErrorMessage($formError);
     }
 
-    public function serializeFormErrorToRaw(YamlSerializationVisitor $visitor, FormError $formError, array $type)
+    public function serializeFormErrorToRaw(RawSerializationVisitor $visitor, FormError $formError, array $type)
     {
         return $this->getErrorMessage($formError);
     }

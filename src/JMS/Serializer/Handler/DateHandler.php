@@ -102,10 +102,19 @@ class DateHandler implements SubscribingHandlerInterface
         return $this->parseDateTime($data, $type);
     }
 
-    public function deserializeDateTimeFromRaw(JsonDeserializationVisitor $visitor, $data, array $type)
+    public function deserializeDateTimeFromRaw(RawDeserializationVisitor $visitor, $data, array $type)
     {
         if (null === $data) {
             return null;
+        }
+
+        if ($date instanceof \DateTime) {
+            $timezone = $this->getTimezone($type);
+
+            $datetime = clone $date;
+            $datetime->setTimezone($timezone);
+
+            return $datetime;
         }
 
         return $this->parseDateTime($data, $type);
@@ -113,14 +122,32 @@ class DateHandler implements SubscribingHandlerInterface
 
     private function parseDateTime($data, array $type)
     {
-        $timezone = isset($type['params'][1]) ? new \DateTimeZone($type['params'][1]) : $this->defaultTimezone;
+        $timezone = $this->getTimezone($type);
         $format = $this->getFormat($type);
+
         $datetime = \DateTime::createFromFormat($format, (string) $data, $timezone);
+
         if (false === $datetime) {
             throw new RuntimeException(sprintf('Invalid datetime "%s", expected format %s.', $data, $format));
         }
 
         return $datetime;
+    }
+
+    /**
+     * Get the timezone for the given type config
+     *
+     * @param array $type
+     *
+     * @return \DateTimeZone
+     */
+    protected function getTimezone(array $type)
+    {
+        if (isset($type['params'][1])) {
+            return new \DateTimeZone($type['params'][1]);
+        }
+
+        return $this->defaultTimezone;
     }
 
     /**

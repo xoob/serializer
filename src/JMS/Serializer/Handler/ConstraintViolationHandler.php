@@ -69,7 +69,7 @@ class ConstraintViolationHandler implements SubscribingHandlerInterface
         return $visitor->visitArray(iterator_to_array($list), $type, $context);
     }
 
-    public function serializeListToRaw(YamlSerializationVisitor $visitor, ConstraintViolationList $list, array $type, Context $context)
+    public function serializeListToRaw(RawSerializationVisitor $visitor, ConstraintViolationList $list, array $type, Context $context)
     {
         return $visitor->visitArray(iterator_to_array($list), $type, $context);
     }
@@ -114,7 +114,7 @@ class ConstraintViolationHandler implements SubscribingHandlerInterface
         );
     }
 
-    public function serializeViolationToRaw(YamlSerializationVisitor $visitor, ConstraintViolation $violation, array $type = null)
+    public function serializeViolationToRaw(RawSerializationVisitor $visitor, ConstraintViolation $violation, array $type = null)
     {
         return array(
             'property_path' => $violation->getPropertyPath(),
