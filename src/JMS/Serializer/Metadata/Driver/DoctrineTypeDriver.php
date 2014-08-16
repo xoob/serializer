@@ -66,4 +66,21 @@ class DoctrineTypeDriver extends AbstractDoctrineTypeDriver
             $propertyMetadata->setType($targetEntity);
         }
     }
+
+    /**
+     * Order properties like they appear in Doctrine: identifiers first, then
+     * fields ordered the way they appear in the class
+     *
+     * @param DoctrineClassMetadata $doctrineMetadata
+     * @param ClassMetadata         $classMetadata
+     */
+    protected function setPropertyOrder(DoctrineClassMetadata $doctrineMetadata, ClassMetadata $classMetadata)
+    {
+        $identifierFields = $doctrineMetadata->getIdentifierFieldNames();
+        $propertyFields = array_keys($doctrineMetadata->reflFields);
+
+        $customOrder = array_unique(array_merge($identifierFields, $propertyFields));
+
+        $classMetadata->setAccessorOrder(ClassMetadata::ACCESSOR_ORDER_CUSTOM, $customOrder);
+    }
 }

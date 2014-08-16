@@ -18,9 +18,10 @@
 
 namespace JMS\Serializer\Metadata\Driver;
 
+use ReflectionClass;
 use Doctrine\Common\Persistence\ManagerRegistry;
-use JMS\Serializer\Metadata\ClassMetadata;
 use Doctrine\Common\Persistence\Mapping\ClassMetadata as DoctrineClassMetadata;
+use JMS\Serializer\Metadata\ClassMetadata;
 use JMS\Serializer\Metadata\PropertyMetadata;
 use Metadata\Driver\DriverInterface;
 
@@ -68,13 +69,30 @@ abstract class AbstractDoctrineTypeDriver implements DriverInterface
      */
     protected $registry;
 
+    /**
+     * Constructor
+     *
+     * @param DriverInterface $delegate
+     * @param ManagerRegistry $registry
+     */
     public function __construct(DriverInterface $delegate, ManagerRegistry $registry)
     {
         $this->delegate = $delegate;
         $this->registry = $registry;
     }
 
-    public function loadMetadataForClass(\ReflectionClass $class)
+    /**
+     * {@inheritdoc}
+     *
+     * If the given class is a known doctrine entity, update the serializer
+     * metadata with field types and discriminator settings inferred from
+     * Doctrine metadata.
+     *
+     * @param ReflectionClass $class
+     *
+     * @return ClassMetadata
+     */
+    public function loadMetadataForClass(ReflectionClass $class)
     {
         /** @var $classMetadata ClassMetadata */
         $classMetadata = $this->delegate->loadMetadataForClass($class);
@@ -103,20 +121,41 @@ abstract class AbstractDoctrineTypeDriver implements DriverInterface
             $this->setPropertyType($doctrineMetadata, $propertyMetadata);
         }
 
+        if ( ! $classMetadata->accessorOrder ) {
+            $this->setPropertyOrder($doctrineMetadata, $classMetadata);
+        }
+
         return $classMetadata;
     }
 
     /**
+     * Infer discriminator settings from the given metadata
+     *
      * @param DoctrineClassMetadata $doctrineMetadata
-     * @param ClassMetadata $classMetadata
+     * @param ClassMetadata         $classMetadata
      */
     protected function setDiscriminator(DoctrineClassMetadata $doctrineMetadata, ClassMetadata $classMetadata)
     {
     }
 
     /**
+     * Infer property order from the given metadata
+     *
      * @param DoctrineClassMetadata $doctrineMetadata
-     * @param PropertyMetadata $propertyMetadata
+     * @param ClassMetadata         $classMetadata
+     */
+    protected function setPropertyOrder(DoctrineClassMetadata $doctrineMetadata, ClassMetadata $classMetadata)
+    {
+    }
+
+    /**
+     * Check if the given property should be hidden based on
+     * the given metadata
+     *
+     * @param DoctrineClassMetadata $doctrineMetadata
+     * @param PropertyMetadata      $propertyMetadata
+     *
+     * @return bool
      */
     protected function hideProperty(DoctrineClassMetadata $doctrineMetadata, PropertyMetadata $propertyMetadata)
     {
@@ -124,8 +163,10 @@ abstract class AbstractDoctrineTypeDriver implements DriverInterface
     }
 
     /**
+     * Infer field types from the given metadata
+     *
      * @param DoctrineClassMetadata $doctrineMetadata
-     * @param PropertyMetadata $propertyMetadata
+     * @param PropertyMetadata      $propertyMetadata
      */
     protected function setPropertyType(DoctrineClassMetadata $doctrineMetadata, PropertyMetadata $propertyMetadata)
     {
@@ -150,12 +191,16 @@ abstract class AbstractDoctrineTypeDriver implements DriverInterface
     }
 
     /**
+     * Map doctrine field types to serializer field types
+     *
      * @param string $type
+     *
+     * @return string|null
      */
     protected function normalizeFieldType($type)
     {
         if (!isset($this->fieldMapping[$type])) {
-            return;
+            return null;
         }
 
         return $this->fieldMapping[$type];
