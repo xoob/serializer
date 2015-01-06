@@ -18,7 +18,6 @@
 
 namespace JMS\Serializer\Metadata\Driver;
 
-use ReflectionClass;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\Common\Persistence\Mapping\ClassMetadata as DoctrineClassMetadata;
 use JMS\Serializer\Metadata\ClassMetadata;
@@ -69,12 +68,6 @@ abstract class AbstractDoctrineTypeDriver implements DriverInterface
      */
     protected $registry;
 
-    /**
-     * Constructor
-     *
-     * @param DriverInterface $delegate
-     * @param ManagerRegistry $registry
-     */
     public function __construct(DriverInterface $delegate, ManagerRegistry $registry)
     {
         $this->delegate = $delegate;
@@ -92,13 +85,13 @@ abstract class AbstractDoctrineTypeDriver implements DriverInterface
      *
      * @return ClassMetadata
      */
-    public function loadMetadataForClass(ReflectionClass $class)
+    public function loadMetadataForClass(\ReflectionClass $class)
     {
         /** @var $classMetadata ClassMetadata */
         $classMetadata = $this->delegate->loadMetadataForClass($class);
 
         // Abort if the given class is not a mapped entity
-        if (!$doctrineMetadata = $this->tryLoadingDoctrineMetadata($class->name)) {
+        if ( ! $doctrineMetadata = $this->tryLoadingDoctrineMetadata($class->name)) {
             return $classMetadata;
         }
 
@@ -132,7 +125,7 @@ abstract class AbstractDoctrineTypeDriver implements DriverInterface
      * Infer discriminator settings from the given metadata
      *
      * @param DoctrineClassMetadata $doctrineMetadata
-     * @param ClassMetadata         $classMetadata
+     * @param ClassMetadata $classMetadata
      */
     protected function setDiscriminator(DoctrineClassMetadata $doctrineMetadata, ClassMetadata $classMetadata)
     {
@@ -142,7 +135,7 @@ abstract class AbstractDoctrineTypeDriver implements DriverInterface
      * Infer property order from the given metadata
      *
      * @param DoctrineClassMetadata $doctrineMetadata
-     * @param ClassMetadata         $classMetadata
+     * @param ClassMetadata $classMetadata
      */
     protected function setPropertyOrder(DoctrineClassMetadata $doctrineMetadata, ClassMetadata $classMetadata)
     {
@@ -153,7 +146,7 @@ abstract class AbstractDoctrineTypeDriver implements DriverInterface
      * the given metadata
      *
      * @param DoctrineClassMetadata $doctrineMetadata
-     * @param PropertyMetadata      $propertyMetadata
+     * @param PropertyMetadata $propertyMetadata
      *
      * @return bool
      */
@@ -166,7 +159,7 @@ abstract class AbstractDoctrineTypeDriver implements DriverInterface
      * Infer field types from the given metadata
      *
      * @param DoctrineClassMetadata $doctrineMetadata
-     * @param PropertyMetadata      $propertyMetadata
+     * @param PropertyMetadata $propertyMetadata
      */
     protected function setPropertyType(DoctrineClassMetadata $doctrineMetadata, PropertyMetadata $propertyMetadata)
     {
@@ -179,7 +172,7 @@ abstract class AbstractDoctrineTypeDriver implements DriverInterface
      */
     protected function tryLoadingDoctrineMetadata($className)
     {
-        if (!$manager = $this->registry->getManagerForClass($className)) {
+        if ( ! $manager = $this->registry->getManagerForClass($className)) {
             return null;
         }
 
@@ -199,7 +192,7 @@ abstract class AbstractDoctrineTypeDriver implements DriverInterface
      */
     protected function normalizeFieldType($type)
     {
-        if (!isset($this->fieldMapping[$type])) {
+        if ( ! isset($this->fieldMapping[$type])) {
             return null;
         }
 
